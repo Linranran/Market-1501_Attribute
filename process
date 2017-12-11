@@ -1,0 +1,48 @@
+import pandas as pd
+import numpy as np
+import glob
+import scipy.io
+import os
+import glob
+
+root = os.getcwd()
+train_dir=root+'/bounding_box_train/'
+test_dir=root+'/bounding_box_test/'
+attribute_dir=root+'/market_attribute.mat'
+attributes={'age','backpack','bag','handbag','downblack','downblue','downbrown','downgray','downgreen','downpink','downpurple','downwhite','downyellow','upblack','upblue','upgreen','upgray','uppurple','upred','upwhite','upyellow','clothes','down','up','hair','hat','gender'}
+train_images=sorted(glob.glob(os.path.join(train_dir,'*.jpg' )))
+test_images=sorted(glob.glob(os.path.join(test_dir,'*.jpg' )))
+
+id_list=[]
+for filename in  train_images :
+    id=filename.split("/")[-1].split("_")[0]
+    id=int(id)
+    if id not in id_list:
+        id_list.append(id)
+for filename in  test_images :
+    id=filename.split("/")[-1].split("_")[0]
+    id=int(id)
+    if id not in id_list and ( (id != 0) and (id != -1)) :
+        id_list.append(id)
+
+
+
+
+attribute_data = pd.DataFrame()
+mat = scipy.io.loadmat(attribute_dir)
+mat_train=mat['market_attribute']['train']
+mat_test=mat['market_attribute']['test']
+for i, attribute in enumerate( attributes):
+    a=mat_train[0][0][attribute][0][0][0]
+    b=mat_test[0][0][attribute][0][0][0]
+    # c= np.append(a,b).tolist()
+    c = np.append(a, b)
+    attribute_data.insert(i,attribute, c)
+attribute_data.insert(0, 'id', id_list)
+new_attribute=attribute_data.sort_index(by='id')
+new_attribute.to_csv(root + "/new_attribute" + ".csv", index=False)
+
+
+attribute = pd.read_csv(root+"/new_attribute.csv")
+a=attribute[0:1]
+a=1
